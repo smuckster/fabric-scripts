@@ -54,7 +54,7 @@ def check_ssl(host, host_name, flags=None):
 		if raw_expdate != "":
 			expdate = parser.parse(raw_expdate)
 			one_month_before = timedelta(days=-31)
-	
+
 
 			# If the certificate has expired
 			if datetime.now(timezone.utc) > expdate:
@@ -62,22 +62,22 @@ def check_ssl(host, host_name, flags=None):
 					print("+ ", cert, "\tCertificate expired! Expiration date: " + raw_expdate + "\t*WARNING*")
 				else:
 					print("+ ", cert, stylize("\tCertificate expired! Expiration date: " + raw_expdate + "\t*WARNING*", colored.fg("red")))
-			
+
 			# If the certificate will expire in the next 31 days
 			elif datetime.now(timezone.utc) > (expdate + one_month_before):
 				if no_colors == True:
 					print("+ ", cert, "\tCertificate expires soon! Expiration date: " + raw_expdate + "\t*WARNING*")
 				else:
 					print("+ ", cert, stylize("\tCertificate expires soon! Expiration date: " + raw_expdate + "\t*WARNING*", colored.fg("orange_1")))
-			
+
 			# If the certificate is still active and will not expire soon
 			else:
 				if only_warn == False:
 					if no_colors == True:
 						print("+ ", cert, "\tCertificate expires " + raw_expdate)
 					else:
-						print("+ ", cert, stylize("\tCertificate expires " + raw_expdate, colored.fg("green"))) 
-		
+						print("+ ", cert, stylize("\tCertificate expires " + raw_expdate, colored.fg("green")))
+
 		# If the certificate has no expiration date
 		else:
 			print("+ ", cert, stylize("\tCertificate is not valid.", colored.fg("red")))
