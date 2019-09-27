@@ -12,6 +12,7 @@ from colored import stylize
 import sys
 import re
 import argparse
+import os
 
 # Import complete list of host names for active clients
 from hosts_list import clients
@@ -31,6 +32,15 @@ def check_space(host, host_name, flags=None):
     # Get an array of space information
     percentage = get_percentage(host)
 
+    # Get the IP of this host
+    ip = host.host
+    # Find the instance that corresponds to this IP, and grab its volume ID
+    vol_id = os.popen("aws ec2 describe-instances --filter Name=ip-address,Values='"+ip+"' | grep VolumeId | awk '{print $2}'").read().replace('"', '')
+    # Get the current size of this volume and strip the extra chars
+    curr_size = os.popen("aws ec2 describe-volumes --volume-ids '"+vol_id+"' | grep Size | awk '{print $2}'").read().strip()[:-1]
+    print(vol_id)
+    print(curr_size)
+
     # Create local variables that can be flagged to change function behavior
     no_colors = False
     only_warn = False
@@ -42,6 +52,8 @@ def check_space(host, host_name, flags=None):
                 no_colors = True
             elif flag == "--only-warnings":
                 only_warn = True
+            elif flag == "--expand-vols":
+                expand_vol = True
 
     print("\nSpace Usage: " + host_name)
 
@@ -50,11 +62,22 @@ def check_space(host, host_name, flags=None):
             print("+ ", percentage[1]+"/"+percentage[2]+" used, "+percentage[3]+" left ("+percentage[0]+") \tSpace may run out soon. \t*WARNING*")
         else:
             print("+ ", percentage[1]+"/"+percentage[2]+" used, "+percentage[3]+" left ("+percentage[0]+")", stylize("\tSpace may run out soon. \t*WARNING*", colored.fg("orange_1")))
+        if expand_vol:
+            print("Expanding volume "+vol_id+" to "+str(int(curr_size)+10)+"GB...")
+            os.system('aws cli --size '+str(int(curr_size)+10)+" --volume-id '"+vol_id+"'")
+            host.sudo('growpart /dev/xvda 1')
+            host.sudo('resize2fs /dev/xvda1')
+
     elif int(percentage[0][:-1]) == 100:
         if no_colors:
             print("+ ", percentage[1]+"/"+percentage[2]+" used, "+percentage[3]+" left ("+percentage[0]+")\tOut of space!. \t*WARNING*")
         else:
             print("+ ", percentage[1]+"/"+percentage[2]+" used, "+percentage[3]+" left ("+percentage[0]+")", stylize("\tOut of space! \t*WARNING*", colored.fg("red_1")))
+        if expand_vol:
+            print("Expanding volume "+vol_id+" to "+str(int(curr_size)+10)+"GB...")
+            os.system('aws cli --size '+str(int(curr_size)+10)+" --volume-id '"+vol_id+"'")
+            host.sudo('growpart /dev/xvda 1')
+            host.sudo('resize2fs /dev/xvda1')
     elif not only_warn:
         print("+ ", percentage[1]+"/"+percentage[2]+" used, "+percentage[3]+" left ("+percentage[0]+")")
 
