@@ -69,6 +69,7 @@ def check_space(host, host_name, flags=None):
             # Growing the partition and expanding the filesystem will fail if we don't wait long enough.
             # I'm not sure how long this needs to be, but it's somwhere between 5 and 30 seconds
             time.sleep(30)
+            os.system('aws cli --size '+str(int(curr_size)+10)+" --volume-id '"+vol_id+"'")
             host.sudo('growpart /dev/xvda 1')
             host.sudo('resize2fs /dev/xvda1')
 
@@ -82,6 +83,7 @@ def check_space(host, host_name, flags=None):
             os.system("aws ec2 modify-volume --size "+str(int(curr_size)+10)+" --volume-id "+vol_id)
             print("Waiting for volume to expand...")
             time.sleep(30)
+            os.system('aws cli --size '+str(int(curr_size)+10)+" --volume-id '"+vol_id+"'")
             host.sudo('growpart /dev/xvda 1')
             host.sudo('resize2fs /dev/xvda1')
     elif not only_warn:
