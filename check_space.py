@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Check SSL Script
+# Check Space Script
 # version 1.0
 #
 
@@ -117,6 +117,7 @@ if len(sys.argv) > 0:
             print("-h or --help: display this message")
             print("--only-warnings: output only warning messages (these will display if space used is greater than 90% or space left is less than 10GB")
             print("--no-color: output will not include text colors. **IMPORTANT** Use this option if you are redirecting the output directly to a log file!")
+            print("--expand-vols: this option will actually go ahead and expand the filesystem if space usage is over 90%, or less than 5GB are left. The filesystem will be expanded by 10GB")
 
 # If flags were given but no host name arguments were, run the entire list of clients
         elif (len(host_args) == 0):
